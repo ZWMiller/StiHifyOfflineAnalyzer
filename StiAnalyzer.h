@@ -59,20 +59,56 @@ public :
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 
-   // TCanvas 
-   TCanvas* errorSumTest;
+   // Set Cut Values
+   const int numEtaBins = 20;
+   float etaBinLow[20]  = {-1.0,-0.9,-0.8,-0.7,-0.6,
+                           -0.5,-0.4,-0.3,-0.2,-0.1,
+                            0.0, 0.1, 0.2, 0.3, 0.4,
+                            0.5, 0.6, 0.7, 0.8, 0.9};
+   float etaBinHigh[20] = {-0.9,-0.8,-0.7,-0.6,-0.5,
+                           -0.4,-0.3,-0.2,-0.1, 0.0, 
+                            0.1, 0.2, 0.3, 0.4, 0.5, 
+                            0.6, 0.7, 0.8, 0.9, 1.0};
 
-   // Histograms
+   const int numPtBins = 10;
+   float ptBinLow[10]  = {0.0, 0.5, 1.0, 1.5, 2.0,
+                          3.0, 4.0, 5.0, 6.0, 8.0};
+   float ptBinHigh[10] = {0.5, 1.0, 1.5, 2.0, 3.0,
+                          4.0, 5.0, 6.0, 8.0, 10.0};
+
+   // TCanvas 
+   int numPtCanvas;
+   int numEtaCanvas;
+   TCanvas* errorSumTest;
+   TCanvas* cErrEta[10];
+   TCanvas* cErrPt[10];
+
+   // Labels
+   TPaveText* lblE[20];
+   TPaveText* lblP[20];
+
+   // Histograms (use vectors for pt/eta binning)
    TH1F* errorAcc;
    TH1F* errorRej;
    TH1F* errorAny;
+   TH1F* errorEtaAcc[20];
+   TH1F* errorPtAcc[20];
+   TH1F* errorEtaRej[20];
+   TH1F* errorPtRej[20];
 
    // Functions for managing objects
    void BookCanvas();
    void BookHistograms();
 
+   // Functions for Filling Histograms
+   void FillHistograms();
+
    // Functions for Drawing on Canvii
    void makeErrorSumTest();
+   void drawEtaHistograms();
+   void drawPtHistograms();
+
+   void MakePDF();
 };
 
 #endif

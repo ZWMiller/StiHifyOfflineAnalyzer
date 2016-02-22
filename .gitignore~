@@ -1,3 +1,7 @@
 plots/*
 relatedReading/*
 *.root
+*.swp
+*.C~
+*.h~
+*.pdf

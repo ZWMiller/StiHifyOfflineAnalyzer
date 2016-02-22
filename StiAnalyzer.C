@@ -4,85 +4,287 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 
+Bool_t DEBUG = kFALSE;
+
 void StiAnalyzer::Loop()
 {
-//   In a ROOT session, you can do:
-//      root> .L StiAnalyzer.C
-//      root> StiAnalyzer t
-//      root> t.GetEntry(12); // Fill t data members with entry number 12
-//      root> t.Show();       // Show values of entry 12
-//      root> t.Show(16);     // Read and show values of entry 16
-//      root> t.Loop();       // Loop on all entries
-//
+  //   In a ROOT session, you can do:
+  //      root> .L StiAnalyzer.C
+  //      root> StiAnalyzer t
+  //      root> t.GetEntry(12); // Fill t data members with entry number 12
+  //      root> t.Show();       // Show values of entry 12
+  //      root> t.Show(16);     // Read and show values of entry 16
+  //      root> t.Loop();       // Loop on all entries
+  //
 
-//     This is the loop skeleton where:
-//    jentry is the global entry number in the chain
-//    ientry is the entry number in the current Tree
-//  Note that the argument to GetEntry must be:
-//    jentry for TChain::GetEntry
-//    ientry for TTree::GetEntry and TBranch::GetEntry
-//
-//       To read only selected branches, Insert statements like:
-// METHOD1:
-//    fChain->SetBranchStatus("*",0);  // disable all branches
-//    fChain->SetBranchStatus("branchname",1);  // activate branchname
-// METHOD2: replace line
-//    fChain->GetEntry(jentry);       //read all branches
-//by  b_branchname->GetEntry(ientry); //read only this branch
-   if (fChain == 0) return;
+  //     This is the loop skeleton where:
+  //    jentry is the global entry number in the chain
+  //    ientry is the entry number in the current Tree
+  //  Note that the argument to GetEntry must be:
+  //    jentry for TChain::GetEntry
+  //    ientry for TTree::GetEntry and TBranch::GetEntry
+  //
+  //       To read only selected branches, Insert statements like:
+  // METHOD1:
+  //    fChain->SetBranchStatus("*",0);  // disable all branches
+  //    fChain->SetBranchStatus("branchname",1);  // activate branchname
+  // METHOD2: replace line
+  //    fChain->GetEntry(jentry);       //read all branches
+  //by  b_branchname->GetEntry(ientry); //read only this branch
+  if (fChain == 0) return;
 
-   Long64_t nentries = fChain->GetEntriesFast();
+  Long64_t nentries = fChain->GetEntriesFast();
 
-   Long64_t nbytes = 0, nb = 0;
-   
-   // If there's a chain and entires, create the hists and canvii.
-   BookHistograms();
-   BookCanvas();
+  Long64_t nbytes = 0, nb = 0;
 
-   for (Long64_t jentry=0; jentry<nentries;jentry++) {
-      Long64_t ientry = LoadTree(jentry);
-      if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
-      // if (Cut(ientry) < 0) continue;
-      errorAcc->Fill(AcceptedHit_errorMag);
-      errorRej->Fill(RejectedHit_errorMag);
-      errorAny->Fill(AnyHit_errorMag);
-   }
+  // If there's a chain and entires, create the hists and canvii.
+  BookHistograms();
+  BookCanvas();
 
-   makeErrorSumTest();
+  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+    Long64_t ientry = LoadTree(jentry);
+    if (ientry < 0) break;
+    nb = fChain->GetEntry(jentry);   nbytes += nb;
+    // if (Cut(ientry) < 0) continue;
+
+    FillHistograms();
+  }
+
+  // Draw on Canvii
+  makeErrorSumTest();
+  drawEtaHistograms();
+  drawPtHistograms();
+
+  // Put all Canvii in PDF
+  MakePDF();
+}
+
+void StiAnalyzer::FillHistograms()
+{
+  if(DEBUG) cout << "In Fill Hist" << endl;
+  // To test Acceptance and Rejection
+  errorAcc->Fill(AcceptedHit_errorMag);
+  errorRej->Fill(RejectedHit_errorMag);
+  errorAny->Fill(AnyHit_errorMag);
+
+  //Eta Dependence of Error
+  for(int etabin = 0; etabin < numEtaBins; etabin++)
+  {
+    if(DEBUG) cout << "   - eta loop " << etabin << endl;
+    if(AcceptedHit_eta > etaBinLow[etabin] && AcceptedHit_eta < etaBinHigh[etabin])
+    {
+      errorEtaAcc[etabin] -> Fill(AcceptedHit_errorMag);
+    }
+    if(RejectedHit_eta > etaBinLow[etabin] && RejectedHit_eta < etaBinHigh[etabin])
+    {
+      errorEtaRej[etabin] -> Fill(RejectedHit_errorMag);
+    }
+
+  }
+
+  //pT Dependece of Error
+  for(int ptbin = 0; ptbin < numPtBins; ptbin++)
+  {
+    if(DEBUG) cout << "   - pT loop " << ptbin <<  endl;
+    if(AcceptedHit_pT > ptBinLow[ptbin] && AcceptedHit_pT < ptBinHigh[ptbin])
+    {
+      errorPtAcc[ptbin] -> Fill(AcceptedHit_errorMag);
+    }
+    if(RejectedHit_pT > ptBinLow[ptbin] && RejectedHit_pT < ptBinHigh[ptbin])
+    {
+      errorPtRej[ptbin] -> Fill(RejectedHit_errorMag);
+    }
+  }
 }
 
 void StiAnalyzer::makeErrorSumTest()
 {
-   errorSumTest->cd();
-   errorAny->SetLineColor(kBlack);
-   errorAcc->SetLineColor(kBlue);
-   errorRej->SetLineColor(kRed);
-   TH1F* sum = (TH1F*)errorAcc->Clone();
-   sum->Add(errorRej);
-   sum->SetLineColor(kMagenta);
-   sum->SetMarkerColor(kMagenta);
-   sum->SetMarkerStyle(20);
-   errorAny->Draw();
-   errorAcc->Draw("same");
-   errorRej->Draw("same");
-   sum->Draw("same P");
-   TLegend* leg = new TLegend(.55,.55,.87,.85);
-   leg->AddEntry(errorAny,"Any Hit","l");
-   leg->AddEntry(errorAcc,"Accept Hit","l");
-   leg->AddEntry(errorRej,"Reject Hit","l");
-   leg->AddEntry(sum,"Accept+Reject","p");
-   leg->Draw("same");
+  if(DEBUG) cout << "make Error Sum Test" << endl;
+  errorSumTest->cd();
+  errorAny->SetLineColor(kBlack);
+  errorAcc->SetLineColor(kBlue);
+  errorRej->SetLineColor(kRed);
+  TH1F* sum = (TH1F*)errorAcc->Clone();
+  sum->Add(errorRej);
+  sum->SetLineColor(kMagenta);
+  sum->SetMarkerColor(kMagenta);
+  sum->SetMarkerStyle(20);
+  errorAny->Draw();
+  errorAcc->Draw("same");
+  errorRej->Draw("same");
+  sum->Draw("same P");
+  TLegend* leg = new TLegend(.55,.55,.87,.85);
+  leg->AddEntry(errorAny,"Any Hit","l");
+  leg->AddEntry(errorAcc,"Accept Hit","l");
+  leg->AddEntry(errorRej,"Reject Hit","l");
+  leg->AddEntry(sum,"Accept+Reject","p");
+  leg->Draw("same");
+}
+
+void StiAnalyzer::drawEtaHistograms()
+{
+  if(DEBUG) cout << "In drawEta Hist" << endl;
+  TLegend* leg = new TLegend(.55,.55,.87,.85);
+  leg->AddEntry(errorEtaAcc[0],"Accept Hit","l");
+  leg->AddEntry(errorEtaRej[0],"Reject Hit","l");
+
+  for(int etabin=0; etabin<numEtaBins; etabin++)
+  {
+    // Init necessary plotting tools
+    char textLabel[100];
+    lblE[etabin] = new TPaveText(.67,.25,.85,.3,Form("NB NDC%i",etabin));
+    sprintf(textLabel,"%.2f < #eta < %.2f",etaBinLow[etabin],etaBinHigh[etabin]);
+    lblE[etabin]->AddText(textLabel);
+    lblE[etabin]->SetFillColor(kWhite);
+
+    int activeCanvas = (int)etabin/9;
+    int activeBin = etabin - activeCanvas*9;
+
+    cErrEta[activeCanvas]->cd(activeBin+1);
+    errorEtaAcc[etabin]->SetLineColor(kBlack);
+    errorEtaAcc[etabin]->SetMarkerStyle(20);
+    errorEtaAcc[etabin]->SetMarkerColor(kBlack);
+    errorEtaRej[etabin]->SetLineColor(kRed);
+    errorEtaRej[etabin]->SetMarkerStyle(21);
+    errorEtaRej[etabin]->SetMarkerColor(kRed);
+    errorEtaRej[etabin]->Draw();
+    errorEtaAcc[etabin]->Draw("same");
+
+    leg->Draw("same");
+
+  }
+}
+
+void StiAnalyzer::drawPtHistograms()
+{
+  if(DEBUG) cout << "In drawPt Hist" << endl;
+  TLegend* leg = new TLegend(.55,.55,.87,.85);
+  leg->AddEntry(errorPtAcc[0],"Accept Hit","l");
+  leg->AddEntry(errorPtRej[0],"Reject Hit","l");
+  for(int ptbin=0; ptbin<numPtBins; ptbin++)
+  {
+    // Init necessary plotting tools
+    char textLabel[100];
+    lblE[ptbin] = new TPaveText(.67,.25,.85,.3,Form("NB NDC%i",ptbin));
+    sprintf(textLabel,"%.2f < pt < %.2f",ptBinLow[ptbin],ptBinHigh[ptbin]);
+    lblE[ptbin]->AddText(textLabel);
+    lblE[ptbin]->SetFillColor(kWhite);
+
+    int activeCanvas = (int)ptbin/9;
+    int activeBin = ptbin - activeCanvas*9;
+
+    cErrPt[activeCanvas]->cd(activeBin+1);
+    errorPtAcc[ptbin]->SetLineColor(kBlack);
+    errorPtAcc[ptbin]->SetMarkerStyle(20);
+    errorPtAcc[ptbin]->SetMarkerColor(kBlack);
+    errorPtRej[ptbin]->SetLineColor(kRed);
+    errorPtRej[ptbin]->SetMarkerStyle(21);
+    errorPtRej[ptbin]->SetMarkerColor(kRed);
+    errorPtRej[ptbin]->Draw();
+    errorPtAcc[ptbin]->Draw("same");
+
+    leg->Draw("same");
+  }
 }
 
 void StiAnalyzer::BookCanvas()
 {
+  numPtCanvas = numPtBins/9 + 1;
+  numEtaCanvas = numEtaBins/9 + 1;
   errorSumTest = new TCanvas("errorSumTest","Error Sum Test",0,0,1050,1050);
+  for(int i = 0; i < numEtaCanvas; i++)
+  {
+    cErrEta[i] = new TCanvas(Form("cErrEta_%i",i),"Error Eta Dependence",0,0,1050,1050);
+    cErrEta[i]->Divide(3,3);
+  }
+  for(int i = 0; i < numPtCanvas; i++)
+  {
+    cErrPt[i] = new TCanvas(Form("cErrPt_%i",i),"Error Pt Dependence",0,0,1050,1050);
+    cErrPt[i]->Divide(3,3);
+  }
+
 }
- 
+
 void StiAnalyzer::BookHistograms()
 {
   errorAcc = new TH1F("errorAcc","errorAcc",200,0,2);
   errorRej = new TH1F("errorRej","errorRej",200,0,2);
   errorAny = new TH1F("errorAny","Projection Errors;Error Magnitude(#sigma);Counts",200,0,2);
+
+  //Eta Bin Histograms
+  for(int etabin = 0; etabin < numEtaBins; etabin++)
+  {
+    errorEtaAcc[etabin] = new TH1F(Form("errorEtaAcc_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
+    errorEtaRej[etabin] = new TH1F(Form("errorEtaRej_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
+  }
+
+  // pT Bin Histograms
+  for(int ptbin = 0; ptbin < numPtBins; ptbin++)
+  {
+    errorPtAcc[ptbin] = new TH1F(Form("errorPtAcc_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
+    errorPtRej[ptbin] = new TH1F(Form("errorPtRej_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
+  }
+
 }
+
+void StiAnalyzer::MakePDF()
+{
+  //Set front page
+  TCanvas* fp = new TCanvas("fp","Front Page",0,0,1050,1050);
+  fp->cd();
+  TBox *bLabel = new TBox(0.01, 0.88, 0.99, 0.99);
+  bLabel->SetFillColor(38);
+  bLabel->Draw();
+  TLatex tl;
+  tl.SetNDC();
+  tl.SetTextColor(kWhite);
+  tl.SetTextSize(0.033);
+  char tlName[100];
+  char tlName2[100];
+  char FileName[100];
+  sprintf(FileName,"st_physics_adc_15107089_raw_5000010.daq.stihify.hist.root");
+
+  TString titlename = FileName;
+  int found = titlename.Last('/');
+  if(found >= 0){
+    titlename.Replace(0, found+1, "");
+  } 
+  sprintf(tlName, "Sti Error Analyzer");
+  tl.SetTextSize(0.05);
+  tl.SetTextColor(kWhite);
+  tl.DrawLatex(0.05, 0.92,tlName);
+
+  TBox *bFoot = new TBox(0.01, 0.01, 0.99, 0.12);
+  bFoot->SetFillColor(38);
+  bFoot->Draw();
+  tl.SetTextColor(kWhite);
+  tl.SetTextSize(0.05);
+  tl.DrawLatex(0.05, 0.05, (new TDatime())->AsString());
+  tl.SetTextColor(kBlack);
+  tl.SetTextSize(0.03);
+  tl.DrawLatex(0.1, 0.14, titlename);
+
+  // Place canvases in order
+  TCanvas* temp = new TCanvas();
+  char name[100];
+  sprintf(name, "%s.pdf[", FileName);
+  temp->Print(name);
+  sprintf(name, "%s.pdf", FileName);
+  temp = fp; // print front page
+  temp->Print(name);
+  for(int q=0; q<numEtaCanvas; q++)
+  {
+    temp = cErrEta[q];
+    temp->Print(name);
+  }
+  for(int q=0; q<numPtCanvas; q++)
+  {
+    temp = cErrPt[q];
+    temp->Print(name);
+  }
+  temp = errorSumTest;
+  temp->Print(name);
+  sprintf(name, "%s.pdf]", FileName);
+  temp->Print(name);
+}
+
