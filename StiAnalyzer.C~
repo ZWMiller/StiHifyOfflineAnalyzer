@@ -74,10 +74,14 @@ void StiAnalyzer::FillHistograms()
     if(AcceptedHit_eta > etaBinLow[etabin] && AcceptedHit_eta < etaBinHigh[etabin])
     {
       errorEtaAcc[etabin] -> Fill(AcceptedHit_errorMag);
+      pullEtaAcc[etabin]  -> Fill(AcceptedHit_pull);
+      resEtaAcc[etabin]  -> Fill(AcceptedHit_residual);
     }
     if(RejectedHit_eta > etaBinLow[etabin] && RejectedHit_eta < etaBinHigh[etabin])
     {
       errorEtaRej[etabin] -> Fill(RejectedHit_errorMag);
+      pullEtaRej[etabin]  -> Fill(RejectedHit_pull);
+      resEtaRej[etabin]  -> Fill(RejectedHit_residual);
     }
 
   }
@@ -86,13 +90,17 @@ void StiAnalyzer::FillHistograms()
   for(int ptbin = 0; ptbin < numPtBins; ptbin++)
   {
     if(DEBUG) cout << "   - pT loop " << ptbin <<  endl;
-    if(AcceptedHit_pT > ptBinLow[ptbin] && AcceptedHit_pT < ptBinHigh[ptbin])
+    if(AcceptedHit_pT > ptBinLow[ptbin] && AcceptedHit_pT < ptBinHigh[ptbin] && fabs(AcceptedHit_z) < 6.)
     {
       errorPtAcc[ptbin] -> Fill(AcceptedHit_errorMag);
+      pullPtAcc[ptbin]  -> Fill(AcceptedHit_pull);
+      resPtAcc[ptbin]  -> Fill(AcceptedHit_residual);
     }
-    if(RejectedHit_pT > ptBinLow[ptbin] && RejectedHit_pT < ptBinHigh[ptbin])
+    if(RejectedHit_pT > ptBinLow[ptbin] && RejectedHit_pT < ptBinHigh[ptbin] && fabs(RejectedHit_z) < 6.)
     {
       errorPtRej[ptbin] -> Fill(RejectedHit_errorMag);
+      pullPtRej[ptbin]  -> Fill(RejectedHit_pull);
+      resPtRej[ptbin]  -> Fill(RejectedHit_residual);
     }
   }
 }
@@ -147,11 +155,31 @@ void StiAnalyzer::drawEtaHistograms()
     errorEtaRej[etabin]->SetLineColor(kRed);
     errorEtaRej[etabin]->SetMarkerStyle(21);
     errorEtaRej[etabin]->SetMarkerColor(kRed);
-    errorEtaRej[etabin]->Draw();
-    errorEtaAcc[etabin]->Draw("same");
-
+    errorEtaAcc[etabin]->Draw();
+    errorEtaRej[etabin]->Draw("same");
     leg->Draw("same");
 
+    cPullEta[activeCanvas]->cd(activeBin+1);
+    pullEtaAcc[etabin]->SetLineColor(kBlack);
+    pullEtaAcc[etabin]->SetMarkerStyle(20);
+    pullEtaAcc[etabin]->SetMarkerColor(kBlack);
+    pullEtaRej[etabin]->SetLineColor(kRed);
+    pullEtaRej[etabin]->SetMarkerStyle(21);
+    pullEtaRej[etabin]->SetMarkerColor(kRed);
+    pullEtaAcc[etabin]->Draw();
+    pullEtaRej[etabin]->Draw("same");
+    leg->Draw("same");
+
+    cResEta[activeCanvas]->cd(activeBin+1);
+    resEtaAcc[etabin]->SetLineColor(kBlack);
+    resEtaAcc[etabin]->SetMarkerStyle(20);
+    resEtaAcc[etabin]->SetMarkerColor(kBlack);
+    resEtaRej[etabin]->SetLineColor(kRed);
+    resEtaRej[etabin]->SetMarkerStyle(21);
+    resEtaRej[etabin]->SetMarkerColor(kRed);
+    resEtaAcc[etabin]->Draw();
+    resEtaRej[etabin]->Draw("same");
+    leg->Draw("same");
   }
 }
 
@@ -180,9 +208,30 @@ void StiAnalyzer::drawPtHistograms()
     errorPtRej[ptbin]->SetLineColor(kRed);
     errorPtRej[ptbin]->SetMarkerStyle(21);
     errorPtRej[ptbin]->SetMarkerColor(kRed);
-    errorPtRej[ptbin]->Draw();
-    errorPtAcc[ptbin]->Draw("same");
+    errorPtAcc[ptbin]->Draw();
+    errorPtRej[ptbin]->Draw("same");
+    leg->Draw("same");
 
+    cPullPt[activeCanvas]->cd(activeBin+1);
+    pullPtAcc[ptbin]->SetLineColor(kBlack);
+    pullPtAcc[ptbin]->SetMarkerStyle(20);
+    pullPtAcc[ptbin]->SetMarkerColor(kBlack);
+    pullPtRej[ptbin]->SetLineColor(kRed);
+    pullPtRej[ptbin]->SetMarkerStyle(21);
+    pullPtRej[ptbin]->SetMarkerColor(kRed);
+    pullPtAcc[ptbin]->Draw();
+    pullPtRej[ptbin]->Draw("same");
+    leg->Draw("same");
+
+    cResPt[activeCanvas]->cd(activeBin+1);
+    resPtAcc[ptbin]->SetLineColor(kBlack);
+    resPtAcc[ptbin]->SetMarkerStyle(20);
+    resPtAcc[ptbin]->SetMarkerColor(kBlack);
+    resPtRej[ptbin]->SetLineColor(kRed);
+    resPtRej[ptbin]->SetMarkerStyle(21);
+    resPtRej[ptbin]->SetMarkerColor(kRed);
+    resPtAcc[ptbin]->Draw();
+    resPtRej[ptbin]->Draw("same");
     leg->Draw("same");
   }
 }
@@ -196,11 +245,19 @@ void StiAnalyzer::BookCanvas()
   {
     cErrEta[i] = new TCanvas(Form("cErrEta_%i",i),"Error Eta Dependence",0,0,1050,1050);
     cErrEta[i]->Divide(3,3);
+    cPullEta[i] = new TCanvas(Form("cPullEta_%i",i),"Pull Eta Dependence",0,0,1050,1050);
+    cPullEta[i]->Divide(3,3);
+    cResEta[i] = new TCanvas(Form("cResEta_%i",i),"Res Eta Dependence",0,0,1050,1050);
+    cResEta[i]->Divide(3,3);
   }
   for(int i = 0; i < numPtCanvas; i++)
   {
     cErrPt[i] = new TCanvas(Form("cErrPt_%i",i),"Error Pt Dependence",0,0,1050,1050);
     cErrPt[i]->Divide(3,3);
+    cPullPt[i] = new TCanvas(Form("cPullPt_%i",i),"Pull Pt Dependence",0,0,1050,1050);
+    cPullPt[i]->Divide(3,3);
+    cResPt[i] = new TCanvas(Form("cResPt_%i",i),"Res Pt Dependence",0,0,1050,1050);
+    cResPt[i]->Divide(3,3);
   }
 
 }
@@ -216,6 +273,10 @@ void StiAnalyzer::BookHistograms()
   {
     errorEtaAcc[etabin] = new TH1F(Form("errorEtaAcc_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
     errorEtaRej[etabin] = new TH1F(Form("errorEtaRej_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
+    pullEtaAcc[etabin] = new TH1F(Form("pullEtaAcc_%i",etabin),Form("pull for %.2f < #eta < %.2f; Pull (cm/#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
+    pullEtaRej[etabin] = new TH1F(Form("pullEtaRej_%i",etabin),Form("pull for %.2f < #eta < %.2f; Pull (cm/#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
+    resEtaAcc[etabin] = new TH1F(Form("resEtaAcc_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
+    resEtaRej[etabin] = new TH1F(Form("resEtaRej_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
   }
 
   // pT Bin Histograms
@@ -223,6 +284,10 @@ void StiAnalyzer::BookHistograms()
   {
     errorPtAcc[ptbin] = new TH1F(Form("errorPtAcc_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
     errorPtRej[ptbin] = new TH1F(Form("errorPtRej_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
+    pullPtAcc[ptbin] = new TH1F(Form("pullPtAcc_%i",ptbin),Form("pull for %.2f < pT < %.2f; Pull (cm/#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
+    pullPtRej[ptbin] = new TH1F(Form("pullPtRej_%i",ptbin),Form("pull for %.2f < pT < %.2f; Pull (cm/#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
+    resPtAcc[ptbin] = new TH1F(Form("resPtAcc_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm)); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
+    resPtRej[ptbin] = new TH1F(Form("resPtRej_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
   }
 
 }
@@ -266,7 +331,7 @@ void StiAnalyzer::MakePDF()
 
   // Place canvases in order
   TCanvas* temp = new TCanvas();
-
+  char name[100];
   sprintf(name, "%s.pdf[", FileName);
   temp->Print(name);
   sprintf(name, "%s.pdf", FileName);
@@ -274,12 +339,20 @@ void StiAnalyzer::MakePDF()
   temp->Print(name);
   for(int q=0; q<numEtaCanvas; q++)
   {
+    temp = cResEta[q];
+    temp->Print(name);
     temp = cErrEta[q];
+    temp->Print(name);
+    temp = cPullEta[q];
     temp->Print(name);
   }
   for(int q=0; q<numPtCanvas; q++)
   {
+    temp = cResPt[q];
+    temp->Print(name);
     temp = cErrPt[q];
+    temp->Print(name);
+    temp = cPullPt[q];
     temp->Print(name);
   }
   temp = errorSumTest;

@@ -82,6 +82,10 @@ public :
    TCanvas* errorSumTest;
    TCanvas* cErrEta[10];
    TCanvas* cErrPt[10];
+   TCanvas* cPullEta[10];
+   TCanvas* cPullPt[10];
+   TCanvas* cResEta[10];
+   TCanvas* cResPt[10];
 
    // Labels
    TPaveText* lblE[20];
@@ -95,6 +99,14 @@ public :
    TH1F* errorPtAcc[20];
    TH1F* errorEtaRej[20];
    TH1F* errorPtRej[20];
+   TH1F* pullEtaAcc[20];
+   TH1F* pullPtAcc[20];
+   TH1F* pullEtaRej[20];
+   TH1F* pullPtRej[20];
+   TH1F* resEtaAcc[20];
+   TH1F* resPtAcc[20];
+   TH1F* resEtaRej[20];
+   TH1F* resPtRej[20];
 
    // Functions for managing objects
    void BookCanvas();
