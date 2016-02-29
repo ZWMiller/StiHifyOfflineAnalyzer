@@ -114,8 +114,12 @@ public :
 
    // Functions for Filling Histograms
    void FillHistograms();
+   void etaBinLoop(); // Loop through eta Bins and fill binned histos
+   void ptBinLoop();  // Loop through pT Bins and fill binned histos
+   void sumTest();    // Make sure Accepted and Rejected Branches Sum to "Any" Branc
 
    // Functions for Drawing on Canvii
+   void drawToCanvas();
    void makeErrorSumTest();
    void drawEtaHistograms();
    void drawPtHistograms();

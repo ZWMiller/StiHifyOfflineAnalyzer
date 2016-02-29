@@ -45,29 +45,34 @@ void StiAnalyzer::Loop()
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     nb = fChain->GetEntry(jentry);   nbytes += nb;
-    // if (Cut(ientry) < 0) continue;
-
     FillHistograms();
   }
 
-  // Draw on Canvii
-  makeErrorSumTest();
-  drawEtaHistograms();
-  drawPtHistograms();
-
-  // Put all Canvii in PDF
+  drawToCanvas();
   MakePDF();
 }
 
 void StiAnalyzer::FillHistograms()
 {
   if(DEBUG) cout << "In Fill Hist" << endl;
+
+  sumTest();
+  etaBinLoop();
+  ptBinLoop();
+}
+
+void StiAnalyzer::sumTest()
+{
+  if(DEBUG) cout << "In sumTest()" << endl;
   // To test Acceptance and Rejection
   errorAcc->Fill(AcceptedHit_errorMag);
   errorRej->Fill(RejectedHit_errorMag);
   errorAny->Fill(AnyHit_errorMag);
+}
 
-  //Eta Dependence of Error
+void StiAnalyzer::etaBinLoop()
+{
+  if(DEBUG) cout << "In etaBinLoop()" << endl;
   for(int etabin = 0; etabin < numEtaBins; etabin++)
   {
     if(DEBUG) cout << "   - eta loop " << etabin << endl;
@@ -85,8 +90,11 @@ void StiAnalyzer::FillHistograms()
     }
 
   }
+}
 
-  //pT Dependece of Error
+void StiAnalyzer::ptBinLoop()
+{
+  if(DEBUG) cout << "In ptBinLoop()" << endl;
   for(int ptbin = 0; ptbin < numPtBins; ptbin++)
   {
     if(DEBUG) cout << "   - pT loop " << ptbin <<  endl;
@@ -103,6 +111,7 @@ void StiAnalyzer::FillHistograms()
       resPtRej[ptbin]  -> Fill(RejectedHit_residual);
     }
   }
+
 }
 
 void StiAnalyzer::makeErrorSumTest()
@@ -238,6 +247,7 @@ void StiAnalyzer::drawPtHistograms()
 
 void StiAnalyzer::BookCanvas()
 {
+  if(DEBUG) cout << "In bookCanvas()" << endl;
   numPtCanvas = numPtBins/9 + 1;
   numEtaCanvas = numEtaBins/9 + 1;
   errorSumTest = new TCanvas("errorSumTest","Error Sum Test",0,0,1050,1050);
@@ -264,6 +274,7 @@ void StiAnalyzer::BookCanvas()
 
 void StiAnalyzer::BookHistograms()
 {
+  if(DEBUG) cout << "In BookHistogram()" << endl;
   errorAcc = new TH1F("errorAcc","errorAcc",200,0,2);
   errorRej = new TH1F("errorRej","errorRej",200,0,2);
   errorAny = new TH1F("errorAny","Projection Errors;Error Magnitude(#sigma);Counts",200,0,2);
@@ -292,8 +303,17 @@ void StiAnalyzer::BookHistograms()
 
 }
 
+void StiAnalyzer::drawToCanvas()
+{
+  if(DEBUG) cout << "In drawToCanvas()" << endl;
+  makeErrorSumTest();
+  drawEtaHistograms();
+  drawPtHistograms();
+}
+
 void StiAnalyzer::MakePDF()
 {
+  if(DEBUG) cout << "In makePDF()" << endl;
   //Set front page
   TCanvas* fp = new TCanvas("fp","Front Page",0,0,1050,1050);
   fp->cd();
@@ -328,6 +348,11 @@ void StiAnalyzer::MakePDF()
   tl.SetTextColor(kBlack);
   tl.SetTextSize(0.03);
   tl.DrawLatex(0.1, 0.14, titlename);
+  sprintf(tlName,"STI Tracking Error Analysis");
+  tl.DrawLatex(0.1, 0.75,tlName);
+  sprintf(tlName,"Z.W. Miller - UIC");
+  tl.DrawLatex(0.1, 0.67,tlName);
+
 
   // Place canvases in order
   TCanvas* temp = new TCanvas();

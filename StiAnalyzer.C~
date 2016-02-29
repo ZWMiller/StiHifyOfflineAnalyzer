@@ -45,29 +45,34 @@ void StiAnalyzer::Loop()
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     nb = fChain->GetEntry(jentry);   nbytes += nb;
-    // if (Cut(ientry) < 0) continue;
-
     FillHistograms();
   }
 
-  // Draw on Canvii
-  makeErrorSumTest();
-  drawEtaHistograms();
-  drawPtHistograms();
-
-  // Put all Canvii in PDF
+  drawToCanvas();
   MakePDF();
 }
 
 void StiAnalyzer::FillHistograms()
 {
   if(DEBUG) cout << "In Fill Hist" << endl;
+
+  sumTest();
+  etaBinLoop();
+  ptBinLoop();
+}
+
+void StiAnalyzer::sumTest()
+{
+  if(DEBUG) cout << "In sumTest()" << endl;
   // To test Acceptance and Rejection
   errorAcc->Fill(AcceptedHit_errorMag);
   errorRej->Fill(RejectedHit_errorMag);
   errorAny->Fill(AnyHit_errorMag);
+}
 
-  //Eta Dependence of Error
+void StiAnalyzer::etaBinLoop()
+{
+  if(DEBUG) cout << "In etaBinLoop()" << endl;
   for(int etabin = 0; etabin < numEtaBins; etabin++)
   {
     if(DEBUG) cout << "   - eta loop " << etabin << endl;
@@ -85,8 +90,11 @@ void StiAnalyzer::FillHistograms()
     }
 
   }
+}
 
-  //pT Dependece of Error
+void StiAnalyzer::ptBinLoop()
+{
+  if(DEBUG) cout << "In ptBinLoop()" << endl;
   for(int ptbin = 0; ptbin < numPtBins; ptbin++)
   {
     if(DEBUG) cout << "   - pT loop " << ptbin <<  endl;
@@ -103,6 +111,7 @@ void StiAnalyzer::FillHistograms()
       resPtRej[ptbin]  -> Fill(RejectedHit_residual);
     }
   }
+
 }
 
 void StiAnalyzer::makeErrorSumTest()
@@ -238,6 +247,7 @@ void StiAnalyzer::drawPtHistograms()
 
 void StiAnalyzer::BookCanvas()
 {
+  if(DEBUG) cout << "In bookCanvas()" << endl;
   numPtCanvas = numPtBins/9 + 1;
   numEtaCanvas = numEtaBins/9 + 1;
   errorSumTest = new TCanvas("errorSumTest","Error Sum Test",0,0,1050,1050);
@@ -264,6 +274,7 @@ void StiAnalyzer::BookCanvas()
 
 void StiAnalyzer::BookHistograms()
 {
+  if(DEBUG) cout << "In BookHistogram()" << endl;
   errorAcc = new TH1F("errorAcc","errorAcc",200,0,2);
   errorRej = new TH1F("errorRej","errorRej",200,0,2);
   errorAny = new TH1F("errorAny","Projection Errors;Error Magnitude(#sigma);Counts",200,0,2);
@@ -273,8 +284,8 @@ void StiAnalyzer::BookHistograms()
   {
     errorEtaAcc[etabin] = new TH1F(Form("errorEtaAcc_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
     errorEtaRej[etabin] = new TH1F(Form("errorEtaRej_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
-    pullEtaAcc[etabin] = new TH1F(Form("pullEtaAcc_%i",etabin),Form("pull for %.2f < #eta < %.2f; Pull (cm/#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
-    pullEtaRej[etabin] = new TH1F(Form("pullEtaRej_%i",etabin),Form("pull for %.2f < #eta < %.2f; Pull (cm/#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
+    pullEtaAcc[etabin] = new TH1F(Form("pullEtaAcc_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull (cm/#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
+    pullEtaRej[etabin] = new TH1F(Form("pullEtaRej_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull (cm/#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
     resEtaAcc[etabin] = new TH1F(Form("resEtaAcc_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
     resEtaRej[etabin] = new TH1F(Form("resEtaRej_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
   }
@@ -284,16 +295,25 @@ void StiAnalyzer::BookHistograms()
   {
     errorPtAcc[ptbin] = new TH1F(Form("errorPtAcc_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
     errorPtRej[ptbin] = new TH1F(Form("errorPtRej_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
-    pullPtAcc[ptbin] = new TH1F(Form("pullPtAcc_%i",ptbin),Form("pull for %.2f < pT < %.2f; Pull (cm/#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
-    pullPtRej[ptbin] = new TH1F(Form("pullPtRej_%i",ptbin),Form("pull for %.2f < pT < %.2f; Pull (cm/#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
+    pullPtAcc[ptbin] = new TH1F(Form("pullPtAcc_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull (cm/#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
+    pullPtRej[ptbin] = new TH1F(Form("pullPtRej_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull (cm/#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
     resPtAcc[ptbin] = new TH1F(Form("resPtAcc_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm)); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
     resPtRej[ptbin] = new TH1F(Form("resPtRej_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
   }
 
 }
 
+void StiAnalyzer::drawToCanvas()
+{
+  if(DEBUG) cout << "In drawToCanvas()" << endl;
+  makeErrorSumTest();
+  drawEtaHistograms();
+  drawPtHistograms();
+}
+
 void StiAnalyzer::MakePDF()
 {
+  if(DEBUG) cout << "In makePDF()" << endl;
   //Set front page
   TCanvas* fp = new TCanvas("fp","Front Page",0,0,1050,1050);
   fp->cd();
