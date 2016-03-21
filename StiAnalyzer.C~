@@ -348,6 +348,11 @@ void StiAnalyzer::MakePDF()
   tl.SetTextColor(kBlack);
   tl.SetTextSize(0.03);
   tl.DrawLatex(0.1, 0.14, titlename);
+  sprintf(tlName,"STI Tracking Error Analysis");
+  tl.DrawLatex(0.1, 0.75,tlName);
+  sprintf(tlName,"Z.W. Miller - UIC");
+  tl.DrawLatex(0.1, 0.67,tlName);
+
 
   // Place canvases in order
   TCanvas* temp = new TCanvas();
