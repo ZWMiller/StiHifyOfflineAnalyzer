@@ -5,6 +5,7 @@
 #include <TCanvas.h>
 
 Bool_t DEBUG = kFALSE;
+Bool_t makeRoot = kTRUE;
 
 void StiAnalyzer::Loop()
 {
@@ -88,7 +89,6 @@ void StiAnalyzer::etaBinLoop()
       pullEtaRej[etabin]  -> Fill(RejectedHit_pull);
       resEtaRej[etabin]  -> Fill(RejectedHit_residual);
     }
-
   }
 }
 

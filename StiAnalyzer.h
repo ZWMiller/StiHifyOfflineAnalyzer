@@ -125,6 +125,7 @@ public :
    void drawPtHistograms();
 
    void MakePDF();
+   void GetHifyFile(TString);
 };
 
 #endif
@@ -134,7 +135,7 @@ StiAnalyzer::StiAnalyzer(TTree *tree) : fChain(0)
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
-   if (tree == 0) {
+ /*  if (tree == 0) {
       TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("st_physics_adc_15107089_raw_5000010.daq.stihify.hist.root");
       if (!f || !f->IsOpen()) {
          f = new TFile("st_physics_adc_15107089_raw_5000010.daq.stihify.hist.root");
@@ -142,7 +143,7 @@ StiAnalyzer::StiAnalyzer(TTree *tree) : fChain(0)
       f->GetObject("pullAnaTree",tree);
 
    }
-   Init(tree);
+   Init(tree);*/
 }
 
 StiAnalyzer::~StiAnalyzer()
@@ -157,6 +158,20 @@ Int_t StiAnalyzer::GetEntry(Long64_t entry)
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
+
+void StiAnalyzer::GetHifyFile(TString name){
+
+// if parameter tree is not specified (or zero), connect the file
+// used to generate this class and read the Tree.
+  TTree* tree;
+  TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(name);
+  if (!f || !f->IsOpen()) {
+    f = new TFile(name);
+  }
+  f->GetObject("pullAnaTree",tree);
+  Init(tree);
+}
+
 Long64_t StiAnalyzer::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry

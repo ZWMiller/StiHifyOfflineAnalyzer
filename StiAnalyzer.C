@@ -12,6 +12,7 @@ void StiAnalyzer::Loop()
   //   In a ROOT session, you can do:
   //      root> .L StiAnalyzer.C
   //      root> StiAnalyzer t
+  //      root> t.GetHifyFile("FILENAME"); // Added ZWM to access other files
   //      root> t.GetEntry(12); // Fill t data members with entry number 12
   //      root> t.Show();       // Show values of entry 12
   //      root> t.Show(16);     // Read and show values of entry 16
