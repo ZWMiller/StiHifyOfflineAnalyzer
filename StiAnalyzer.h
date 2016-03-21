@@ -126,6 +126,14 @@ public :
 
    void MakePDF();
    void GetHifyFile(TString);
+
+   void makeOutFile();
+   void writeOutFile();
+   
+private:
+
+   TFile* outFile;
+   TString fileName;
 };
 
 #endif
@@ -168,6 +176,7 @@ void StiAnalyzer::GetHifyFile(TString name){
   if (!f || !f->IsOpen()) {
     f = new TFile(name);
   }
+  fileName = name;
   f->GetObject("pullAnaTree",tree);
   Init(tree);
 }

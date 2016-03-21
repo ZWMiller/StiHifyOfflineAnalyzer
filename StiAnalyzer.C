@@ -40,6 +40,8 @@ void StiAnalyzer::Loop()
   Long64_t nbytes = 0, nb = 0;
 
   // If there's a chain and entires, create the hists and canvii.
+  if(makeRoot)
+    makeOutFile();
   BookHistograms();
   BookCanvas();
 
@@ -52,6 +54,8 @@ void StiAnalyzer::Loop()
 
   drawToCanvas();
   MakePDF();
+  if(makeRoot)
+    writeOutFile();
 }
 
 void StiAnalyzer::FillHistograms()
@@ -328,9 +332,9 @@ void StiAnalyzer::MakePDF()
   char tlName[100];
   char tlName2[100];
   char FileName[100];
-  sprintf(FileName,"st_physics_adc_15107089_raw_5000010.daq.stihify.hist.root");
+  sprintf(FileName,fileName); //convert string to char for later
 
-  TString titlename = FileName;
+  TString titlename = fileName;
   int found = titlename.Last('/');
   if(found >= 0){
     titlename.Replace(0, found+1, "");
@@ -387,3 +391,12 @@ void StiAnalyzer::MakePDF()
   temp->Print(name);
 }
 
+void StiAnalyzer::makeOutFile(){
+  TString NAME = fileName;
+  NAME.ReplaceAll(".root",".processed.root");
+  outFile = new TFile(NAME,"RECREATE");
+}
+
+void StiAnalyzer::writeOutFile(){
+  outFile->Write();
+}

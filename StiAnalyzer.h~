@@ -126,6 +126,11 @@ public :
 
    void MakePDF();
    void GetHifyFile(TString);
+
+   void makeOutFile();
+   void writeOutFile();
+   TFile* outFile;
+   TString fileName;
 };
 
 #endif
@@ -164,15 +169,13 @@ void StiAnalyzer::GetHifyFile(TString name){
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
   TTree* tree;
-   if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(name);
-      if (!f || !f->IsOpen()) {
-         f = new TFile(name);
-      }
-      f->GetObject("pullAnaTree",tree);
-
-   }
-   Init(tree);
+  TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(name);
+  if (!f || !f->IsOpen()) {
+    f = new TFile(name);
+  }
+  fileName = name;
+  f->GetObject("pullAnaTree",tree);
+  Init(tree);
 }
 
 Long64_t StiAnalyzer::LoadTree(Long64_t entry)
