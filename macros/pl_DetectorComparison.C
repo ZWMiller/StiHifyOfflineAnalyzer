@@ -7,7 +7,7 @@ int pl_DetectorComparison(TString baseName = "test.root"){
   bool DEBUG = kFALSE;
   TString detector[3] = {"IST","PXL1","PXL2"};
   baseName.ReplaceAll(".root","");
-  
+
 
   // Open Files
   TFile* f[3];
@@ -40,14 +40,14 @@ int pl_DetectorComparison(TString baseName = "test.root"){
     etaBinHigh[c] = anaConst::etaBinHigh[c];
   }
 
-    
+
   TH1F* errorEta[3][nEtaBins];
   TH1F* errorPt[3][nPtBins];
   TH1F* resEta[3][nEtaBins];
   TH1F* resPt[3][nPtBins];
   TH1F* pullEta[3][nEtaBins];
   TH1F* pullPt[3][nPtBins];
-  
+
   if(DEBUG) cout << "at get hists" << endl;
   for(int det=0; det<3; det++)
   {
@@ -95,7 +95,7 @@ int pl_DetectorComparison(TString baseName = "test.root"){
     cResPt[i]->Divide(3,3);
   }
 
-  
+
   // Draw Hists to Canvii
   TLegend* leg = new TLegend(.55,.55,.87,.85);
   leg->AddEntry(errorEta[0][0],"IST","l");
@@ -121,7 +121,6 @@ int pl_DetectorComparison(TString baseName = "test.root"){
     errorEta[1][etabin]->SetLineColor(kBlue);
     errorEta[2][etabin]->SetLineColor(kRed);
     drawSort(cErrEta[activeCanvas],activeBin,errorEta[0][etabin],errorEta[1][etabin],errorEta[2][etabin]);
-    lblE[etabin]->Draw("same");
     leg->Draw("same");
 
     if(DEBUG) cout << "at eta res canvas" << endl;
@@ -130,7 +129,6 @@ int pl_DetectorComparison(TString baseName = "test.root"){
     resEta[1][etabin]->SetLineColor(kBlue);
     resEta[2][etabin]->SetLineColor(kRed);
     drawSort(cResEta[activeCanvas],activeBin,resEta[0][etabin],resEta[1][etabin],resEta[2][etabin]);
-    lblE[etabin]->Draw("same");
     leg->Draw("same");
 
     if(DEBUG) cout << "at eta pull canvas" << endl;
@@ -139,7 +137,6 @@ int pl_DetectorComparison(TString baseName = "test.root"){
     pullEta[1][etabin]->SetLineColor(kBlue);
     pullEta[2][etabin]->SetLineColor(kRed);
     drawSort(cPullEta[activeCanvas],activeBin,pullEta[0][etabin],pullEta[1][etabin],pullEta[2][etabin]);
-    lblE[etabin]->Draw("same");
     leg->Draw("same");
   }
 
@@ -162,7 +159,6 @@ int pl_DetectorComparison(TString baseName = "test.root"){
     errorPt[1][ptbin]->SetLineColor(kBlue);
     errorPt[2][ptbin]->SetLineColor(kRed);
     drawSort(cErrPt[activeCanvas],activeBin,errorPt[0][ptbin],errorPt[1][ptbin],errorPt[2][ptbin]);
-    lblP[ptbin]->Draw("same");
     leg->Draw("same");
 
     cResPt[activeCanvas]->cd(activeBin+1);
@@ -170,7 +166,6 @@ int pl_DetectorComparison(TString baseName = "test.root"){
     resPt[1][ptbin]->SetLineColor(kBlue);
     resPt[2][ptbin]->SetLineColor(kRed);
     drawSort(cResPt[activeCanvas],activeBin,resPt[0][ptbin],resPt[1][ptbin],resPt[2][ptbin]);
-    lblP[ptbin]->Draw("same");
     leg->Draw("same");
 
     cPullPt[activeCanvas]->cd(activeBin+1);
@@ -178,7 +173,6 @@ int pl_DetectorComparison(TString baseName = "test.root"){
     pullPt[1][ptbin]->SetLineColor(kBlue);
     pullPt[2][ptbin]->SetLineColor(kRed);
     drawSort(cPullPt[activeCanvas],activeBin,pullPt[0][ptbin],pullPt[1][ptbin],pullPt[2][ptbin]);
-    lblP[ptbin]->Draw("same");
     leg->Draw("same");
   }
 
@@ -267,21 +261,21 @@ void drawSort(TCanvas* can, int activeB, TH1F* a, TH1F* b, TH1F* c)
   can->cd(activeB+1);
   gPad->SetLogy(isLogY);
   if(a >= b && a >= c)
-    {
-      a->Draw();
-      b->Draw("same");
-      c->Draw("same");
-    }
+  {
+    a->Draw();
+    b->Draw("same");
+    c->Draw("same");
+  }
   else if(b >= a && b >= c)
-    {
-      b->Draw();
-      a->Draw("same");
-      c->Draw("same");
-    }
+  {
+    b->Draw();
+    a->Draw("same");
+    c->Draw("same");
+  }
   else if(c >= b && c >= a)
-    {
-      c->Draw();
-      b->Draw("same");
-      a->Draw("same");
-    }
+  {
+    c->Draw();
+    b->Draw("same");
+    a->Draw("same");
+  }
 }
