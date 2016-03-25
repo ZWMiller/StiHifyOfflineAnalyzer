@@ -1,0 +1,9 @@
+a=$1
+b=${a%.bar}
+root -l -b <<EOF
+.L StiAnalyzer.C
+StiAnalyzer s
+s.GetHifyFile("$1")
+s.Loop()
+EOF
+open $b.pdf

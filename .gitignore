@@ -5,3 +5,5 @@ relatedReading/*
 *.C~
 *.h~
 *.pdf
+*.swo
+*EOF*

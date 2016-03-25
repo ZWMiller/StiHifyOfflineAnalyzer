@@ -6,6 +6,7 @@
 
 Bool_t DEBUG = kFALSE;
 Bool_t makeRoot = kTRUE;
+Bool_t etaLogY = kTRUE;
 
 void StiAnalyzer::Loop()
 {
@@ -40,6 +41,7 @@ void StiAnalyzer::Loop()
   Long64_t nbytes = 0, nb = 0;
 
   // If there's a chain and entires, create the hists and canvii.
+  setBinningValues();
   if(makeRoot)
     makeOutFile();
   BookHistograms();
@@ -163,17 +165,27 @@ void StiAnalyzer::drawEtaHistograms()
     int activeBin = etabin - activeCanvas*9;
 
     cErrEta[activeCanvas]->cd(activeBin+1);
+    gPad->SetLogy(etaLogY);
     errorEtaAcc[etabin]->SetLineColor(kBlack);
     errorEtaAcc[etabin]->SetMarkerStyle(20);
     errorEtaAcc[etabin]->SetMarkerColor(kBlack);
     errorEtaRej[etabin]->SetLineColor(kRed);
     errorEtaRej[etabin]->SetMarkerStyle(21);
     errorEtaRej[etabin]->SetMarkerColor(kRed);
-    errorEtaAcc[etabin]->Draw();
-    errorEtaRej[etabin]->Draw("same");
+    if(errorEtaAcc[etabin]->GetMaximum() > errorEtaRej[etabin]->GetMaximum())
+    {
+      errorEtaAcc[etabin]->Draw();
+      errorEtaRej[etabin]->Draw("same");
+    }
+    else
+    {
+      errorEtaRej[etabin]->Draw();
+      errorEtaAcc[etabin]->Draw("same");
+    }
     leg->Draw("same");
 
     cPullEta[activeCanvas]->cd(activeBin+1);
+    gPad->SetLogy(etaLogY);
     pullEtaAcc[etabin]->SetLineColor(kBlack);
     pullEtaAcc[etabin]->SetMarkerStyle(20);
     pullEtaAcc[etabin]->SetMarkerColor(kBlack);
@@ -185,6 +197,7 @@ void StiAnalyzer::drawEtaHistograms()
     leg->Draw("same");
 
     cResEta[activeCanvas]->cd(activeBin+1);
+    gPad->SetLogy(etaLogY);
     resEtaAcc[etabin]->SetLineColor(kBlack);
     resEtaAcc[etabin]->SetMarkerStyle(20);
     resEtaAcc[etabin]->SetMarkerColor(kBlack);
@@ -222,8 +235,16 @@ void StiAnalyzer::drawPtHistograms()
     errorPtRej[ptbin]->SetLineColor(kRed);
     errorPtRej[ptbin]->SetMarkerStyle(21);
     errorPtRej[ptbin]->SetMarkerColor(kRed);
-    errorPtAcc[ptbin]->Draw();
-    errorPtRej[ptbin]->Draw("same");
+    if(errorPtAcc[ptbin]->GetMaximum() > errorPtRej[ptbin]->GetMaximum())
+    {
+      errorPtAcc[ptbin]->Draw();
+      errorPtRej[ptbin]->Draw("same");
+    }
+    else
+    {
+      errorPtRej[ptbin]->Draw();
+      errorPtAcc[ptbin]->Draw("same");
+    }
     leg->Draw("same");
 
     cPullPt[activeCanvas]->cd(activeBin+1);
@@ -282,15 +303,15 @@ void StiAnalyzer::BookHistograms()
   if(DEBUG) cout << "In BookHistogram()" << endl;
   errorAcc = new TH1F("errorAcc","errorAcc",200,0,2);
   errorRej = new TH1F("errorRej","errorRej",200,0,2);
-  errorAny = new TH1F("errorAny","Projection Errors;Error Magnitude(#sigma);Counts",200,0,2);
+  errorAny = new TH1F("errorAny","Projection Errors;Error Magnitude(cm);Counts",200,0,2);
 
   //Eta Bin Histograms
   for(int etabin = 0; etabin < numEtaBins; etabin++)
   {
-    errorEtaAcc[etabin] = new TH1F(Form("errorEtaAcc_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
-    errorEtaRej[etabin] = new TH1F(Form("errorEtaRej_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
-    pullEtaAcc[etabin] = new TH1F(Form("pullEtaAcc_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull (cm/#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
-    pullEtaRej[etabin] = new TH1F(Form("pullEtaRej_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull (cm/#sigma); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
+    errorEtaAcc[etabin] = new TH1F(Form("errorEtaAcc_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.5);
+    errorEtaRej[etabin] = new TH1F(Form("errorEtaRej_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.5);
+    pullEtaAcc[etabin] = new TH1F(Form("pullEtaAcc_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull; Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
+    pullEtaRej[etabin] = new TH1F(Form("pullEtaRej_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull; Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
     resEtaAcc[etabin] = new TH1F(Form("resEtaAcc_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
     resEtaRej[etabin] = new TH1F(Form("resEtaRej_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
   }
@@ -298,10 +319,10 @@ void StiAnalyzer::BookHistograms()
   // pT Bin Histograms
   for(int ptbin = 0; ptbin < numPtBins; ptbin++)
   {
-    errorPtAcc[ptbin] = new TH1F(Form("errorPtAcc_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
-    errorPtRej[ptbin] = new TH1F(Form("errorPtRej_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
-    pullPtAcc[ptbin] = new TH1F(Form("pullPtAcc_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull (cm/#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
-    pullPtRej[ptbin] = new TH1F(Form("pullPtRej_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull (cm/#sigma); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
+    errorPtAcc[ptbin] = new TH1F(Form("errorPtAcc_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.5);
+    errorPtRej[ptbin] = new TH1F(Form("errorPtRej_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.5);
+    pullPtAcc[ptbin] = new TH1F(Form("pullPtAcc_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull ; Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
+    pullPtRej[ptbin] = new TH1F(Form("pullPtRej_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull ; Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
     resPtAcc[ptbin] = new TH1F(Form("resPtAcc_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm)); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
     resPtRej[ptbin] = new TH1F(Form("resPtRej_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
   }
@@ -332,7 +353,9 @@ void StiAnalyzer::MakePDF()
   char tlName[100];
   char tlName2[100];
   char FileName[100];
-  sprintf(FileName,fileName); //convert string to char for later
+  TString fileName2 = fileName;
+  fileName2.ReplaceAll(".root","");
+  sprintf(FileName,fileName2); //convert string to char for later
 
   TString titlename = fileName;
   int found = titlename.Last('/');
@@ -393,10 +416,24 @@ void StiAnalyzer::MakePDF()
 
 void StiAnalyzer::makeOutFile(){
   TString NAME = fileName;
-  NAME.ReplaceAll(".root","processed.root");
+  NAME.ReplaceAll(".root",".processed.root");
   outFile = new TFile(NAME,"RECREATE");
 }
 
 void StiAnalyzer::writeOutFile(){
   outFile->Write();
+}
+
+void StiAnalyzer::setBinningValues(){
+  numPtBins  = anaConst::numPtBins;
+  numEtaBins = anaConst::numEtaBins;
+  for(Int_t c=0; c< numPtBins; c++){
+    ptBinLow[c] = anaConst::ptBinLow[c];
+    ptBinHigh[c] = anaConst::ptBinHigh[c];
+  }
+  for(Int_t c=0; c< numEtaBins; c++){
+    etaBinLow[c] = anaConst::etaBinLow[c];
+    etaBinHigh[c] = anaConst::etaBinHigh[c];
+  }
+
 }

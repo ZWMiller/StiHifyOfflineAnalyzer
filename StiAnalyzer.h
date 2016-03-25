@@ -60,7 +60,7 @@ public :
    virtual void     Show(Long64_t entry = -1);
 
    // Set Cut Values
-   const int numEtaBins = 20;
+   /*const int numEtaBins = 20;
    float etaBinLow[20]  = {-1.0,-0.9,-0.8,-0.7,-0.6,
                            -0.5,-0.4,-0.3,-0.2,-0.1,
                             0.0, 0.1, 0.2, 0.3, 0.4,
@@ -75,6 +75,12 @@ public :
                           3.0, 4.0, 5.0, 6.0, 8.0};
    float ptBinHigh[10] = {0.5, 1.0, 1.5, 2.0, 3.0,
                           4.0, 5.0, 6.0, 8.0, 10.0};
+*/
+   // Set Cut Values
+   void setBinningValues();
+   int numEtaBins, numPtBins;
+   float etaBinLow[50], etaBinHigh[50];
+   float ptBinLow[50], ptBinHigh[50];
 
    // TCanvas 
    int numPtCanvas;
