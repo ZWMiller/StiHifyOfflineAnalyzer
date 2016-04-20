@@ -1,5 +1,6 @@
 #define StiAnalyzer_cxx
 #include "StiAnalyzer.h"
+#include "anaConstEmbed.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
@@ -53,11 +54,66 @@ void StiAnalyzer::Loop()
     nb = fChain->GetEntry(jentry);   nbytes += nb;
     FillHistograms();
   }
-
+  makeEfficiencyPlots();
   drawToCanvas();
   MakePDF();
   if(makeRoot)
     writeOutFile();
+}
+
+void StiAnalyzer::BookTGraphs()
+{
+  efficiency_pt = new TGraphErrors(ptCounter,ptVal,ptEff);
+  efficiency_eta = new TGraphErrors(etaCounter,etaVal,etaEff);
+}
+
+void StiAnalyzer::drawEfficiency()
+{
+    cEffPlots->cd(1);
+    efficiency_eta->SetTitle("Efficiency Eta Dependence;Eta;Acc/(Acc+Rej)");
+    efficiency_eta->SetMarkerStyle(20);
+    efficiency_eta->Draw("APE");
+
+    cEffPlots->cd(2);
+    efficiency_pt->SetTitle("Efficiency pT Dependence;pT (GeV/C^{2});Acc/(Acc+Rej)");
+    efficiency_pt->SetMarkerStyle(20);
+    efficiency_pt->Draw("APE");
+}
+
+void StiAnalyzer::makeEfficiencyPlots()
+{
+  makeEtaEfficiency();
+  makePtEfficiency();
+  BookTGraphs();
+  drawEfficiency();
+}
+
+void StiAnalyzer::makeEtaEfficiency()
+{
+  etaCounter = 0;
+  for(int etabin = 0; etabin < numEtaBins; etabin++)
+  {
+    if(DEBUG) cout << " efficiency - eta loop " << etabin << endl;
+    float Acc = errorEtaAcc[etabin] -> Integral();
+    float Rej = errorEtaRej[etabin] -> Integral();
+    etaEff[etabin] = Acc/(Acc+Rej);
+    etaVal[etabin] = (etaBinLow[etabin]+etaBinHigh[etabin])/2.;
+    etaCounter++;
+  }
+}
+
+void StiAnalyzer::makePtEfficiency()
+{
+  ptCounter = 0;
+  for(int ptbin = 0; ptbin < numPtBins; ptbin++)
+  {
+    if(DEBUG) cout << " efficiency - pt loop " << ptbin << endl;
+    float Acc = errorPtAcc[ptbin] -> Integral();
+    float Rej = errorPtRej[ptbin] -> Integral();
+    ptEff[ptbin] = Acc/(Acc+Rej);
+    ptVal[ptbin] = (ptBinLow[ptbin]+ptBinHigh[ptbin])/2.;
+    ptCounter++;
+  }
 }
 
 void StiAnalyzer::FillHistograms()
@@ -277,6 +333,8 @@ void StiAnalyzer::BookCanvas()
   numPtCanvas = numPtBins/9 + 1;
   numEtaCanvas = numEtaBins/9 + 1;
   errorSumTest = new TCanvas("errorSumTest","Error Sum Test",0,0,1050,1050);
+  cEffPlots    = new TCanvas("cEffPlots","Efficiency",0,0,1050,1050);
+  cEffPlots->Divide(1,2);
   for(int i = 0; i < numEtaCanvas; i++)
   {
     cErrEta[i] = new TCanvas(Form("cErrEta_%i",i),"Error Eta Dependence",0,0,1050,1050);
@@ -295,7 +353,6 @@ void StiAnalyzer::BookCanvas()
     cResPt[i] = new TCanvas(Form("cResPt_%i",i),"Res Pt Dependence",0,0,1050,1050);
     cResPt[i]->Divide(3,3);
   }
-
 }
 
 void StiAnalyzer::BookHistograms()
@@ -308,23 +365,23 @@ void StiAnalyzer::BookHistograms()
   //Eta Bin Histograms
   for(int etabin = 0; etabin < numEtaBins; etabin++)
   {
-    errorEtaAcc[etabin] = new TH1F(Form("errorEtaAcc_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.5);
+    errorEtaAcc[etabin] = new TH1F(Form("errorEtaAcc_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.2);
     errorEtaRej[etabin] = new TH1F(Form("errorEtaRej_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.5);
     pullEtaAcc[etabin] = new TH1F(Form("pullEtaAcc_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull; Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
     pullEtaRej[etabin] = new TH1F(Form("pullEtaRej_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull; Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,10);
-    resEtaAcc[etabin] = new TH1F(Form("resEtaAcc_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
-    resEtaRej[etabin] = new TH1F(Form("resEtaRej_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,2);
+    resEtaAcc[etabin] = new TH1F(Form("resEtaAcc_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.5);
+    resEtaRej[etabin] = new TH1F(Form("resEtaRej_%i",etabin),Form("Residual for %.2f < #eta < %.2f; Dist to Close Hit (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.5);
   }
 
   // pT Bin Histograms
   for(int ptbin = 0; ptbin < numPtBins; ptbin++)
   {
-    errorPtAcc[ptbin] = new TH1F(Form("errorPtAcc_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.5);
+    errorPtAcc[ptbin] = new TH1F(Form("errorPtAcc_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.2);
     errorPtRej[ptbin] = new TH1F(Form("errorPtRej_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.5);
     pullPtAcc[ptbin] = new TH1F(Form("pullPtAcc_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull ; Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
     pullPtRej[ptbin] = new TH1F(Form("pullPtRej_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull ; Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,10);
-    resPtAcc[ptbin] = new TH1F(Form("resPtAcc_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm)); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
-    resPtRej[ptbin] = new TH1F(Form("resPtRej_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,2);
+    resPtAcc[ptbin] = new TH1F(Form("resPtAcc_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm)); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.5);
+    resPtRej[ptbin] = new TH1F(Form("resPtRej_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.5);
   }
 
 }
@@ -408,6 +465,8 @@ void StiAnalyzer::MakePDF()
     temp = cPullPt[q];
     temp->Print(name);
   }
+  temp = cEffPlots;
+  temp->Print(name);
   temp = errorSumTest;
   temp->Print(name);
   sprintf(name, "%s.pdf]", FileName);

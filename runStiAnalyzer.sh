@@ -6,4 +6,4 @@ StiAnalyzer s
 s.GetHifyFile("$1")
 s.Loop()
 EOF
-open $b.pdf
+#open $b.pdf

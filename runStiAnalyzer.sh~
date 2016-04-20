@@ -1,5 +1,5 @@
 a=$1
-b=${a%.bar}
+b=${a%.root}
 root -l -b <<EOF
 .L StiAnalyzer.C
 StiAnalyzer s

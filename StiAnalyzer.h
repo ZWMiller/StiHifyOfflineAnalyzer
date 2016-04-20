@@ -69,6 +69,7 @@ public :
    int numPtCanvas;
    int numEtaCanvas;
    TCanvas* errorSumTest;
+   TCanvas* cEffPlots;
    TCanvas* cErrEta[10];
    TCanvas* cErrPt[10];
    TCanvas* cPullEta[10];
@@ -97,27 +98,40 @@ public :
    TH1F* resEtaRej[20];
    TH1F* resPtRej[20];
 
+   //TGraphObjects
+   int ptCounter,etaCounter;
+   float etaEff[50], ptEff[50], etaVal[50], ptVal[50];
+   TGraphErrors* efficiency_pt;
+   TGraphErrors* efficiency_eta;
+
    // Functions for managing objects
    void BookCanvas();
    void BookHistograms();
+   void BookTGraphs();
 
    // Functions for Filling Histograms
    void FillHistograms();
    void etaBinLoop(); // Loop through eta Bins and fill binned histos
    void ptBinLoop();  // Loop through pT Bins and fill binned histos
    void sumTest();    // Make sure Accepted and Rejected Branches Sum to "Any" Branc
+   void makeEfficiencyPlots(); // Integrate objects to see what I have
+   void makeEtaEfficiency();
+   void makePtEfficiency();
 
    // Functions for Drawing on Canvii
    void drawToCanvas();
    void makeErrorSumTest();
    void drawEtaHistograms();
    void drawPtHistograms();
+   void drawEfficiency();
 
+   // Functional Procedures
    void MakePDF();
-   void GetHifyFile(TString);
 
+   // Input/Output
    void makeOutFile();
    void writeOutFile();
+   void GetHifyFile(TString);
    
 private:
 
