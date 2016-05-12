@@ -69,6 +69,7 @@ public :
    int numPtCanvas;
    int numEtaCanvas;
    TCanvas* errorSumTest;
+   TCanvas* cEffPlots;
    TCanvas* cErrEta[10];
    TCanvas* cErrPt[10];
    TCanvas* cPullEta[10];

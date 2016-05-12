@@ -11,6 +11,7 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <string>
 
 // Header file for the classes stored in the TTree if any.
 
@@ -136,7 +137,7 @@ public :
 private:
 
    TFile* outFile;
-   TString fileName;
+   string fileName;
 };
 
 #endif

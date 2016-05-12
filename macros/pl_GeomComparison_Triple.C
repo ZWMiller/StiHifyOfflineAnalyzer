@@ -1,31 +1,34 @@
 #include "anaConstEmbed.h"
-void drawSort(TCanvas*, int, TH1F*, TH1F*, int);
-void Normalize(TH1F*, TH1F*);
+void drawSort(TCanvas*, int, TH1F*, TH1F*,TH1F*, int);
+void Normalize(TH1F*, TH1F*, TH1F*);
 
 
-int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2.root"){
+int pl_GeomComparison_Triple(TString baseName = "junk.root", TString baseName2 = "junk2.root", TString baseName3 = "junk3.root"){
 
   bool DEBUG = kFALSE;
   TString detector[3] = {"IST","PXL1","PXL2"};
   baseName.ReplaceAll(".root","");
   baseName2.ReplaceAll(".root","");
-  TString bName[2] = {baseName,baseName2};
-  TString legName[2] = {baseName,baseName2};
+  baseName3.ReplaceAll(".root","");
+  TString bName[3] = {baseName,baseName2,baseName3};
+  TString legName[3] = {baseName,baseName2,baseName3};
   legName[0].ReplaceAll(".stihify.hist","");
   legName[1].ReplaceAll(".stihify.hist","");
+  legName[2].ReplaceAll(".stihify.hist","");
   legName[0].ReplaceAll("piplus_","");
   legName[1].ReplaceAll("piplus_","");
-  for(int ll=0;ll<2;ll++)
+  legName[2].ReplaceAll("piplus_","");
+  for(int ll=0;ll<3;ll++)
   {
     legName[ll].ReplaceAll("7130","Database");
     legName[ll].ReplaceAll("7131","Ideal");
   }
 
   // Open Files
-  TFile* f[2][3];
+  TFile* f[3][3];
   TString fileName;
   if(DEBUG) cout << "at open file" << endl;
-  for (int i=0; i<2; i++){
+  for (int i=0; i<3; i++){
     for (int det=0; det<3; det++){
       fileName = "";
       fileName += bName[i] + "." + detector[det] + ".processed.root";
@@ -56,21 +59,21 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
   }
 
 
-  TH1F* errorEta[2][3][nEtaBins];
-  TH1F* errorPt[2][3][nPtBins];
-  TH1F* resEta[2][3][nEtaBins];
-  TH1F* resPt[2][3][nPtBins];
-  TH1F* pullEta[2][3][nEtaBins];
-  TH1F* pullPt[2][3][nPtBins];
-  TH1F* RerrorEta[2][3][nEtaBins];
-  TH1F* RerrorPt[2][3][nPtBins];
-  TH1F* RresEta[2][3][nEtaBins];
-  TH1F* RresPt[2][3][nPtBins];
-  TH1F* RpullEta[2][3][nEtaBins];
-  TH1F* RpullPt[2][3][nPtBins];
+  TH1F* errorEta[3][3][nEtaBins];
+  TH1F* errorPt[3][3][nPtBins];
+  TH1F* resEta[3][3][nEtaBins];
+  TH1F* resPt[3][3][nPtBins];
+  TH1F* pullEta[3][3][nEtaBins];
+  TH1F* pullPt[3][3][nPtBins];
+  TH1F* RerrorEta[3][3][nEtaBins];
+  TH1F* RerrorPt[3][3][nPtBins];
+  TH1F* RresEta[3][3][nEtaBins];
+  TH1F* RresPt[3][3][nPtBins];
+  TH1F* RpullEta[3][3][nEtaBins];
+  TH1F* RpullPt[3][3][nPtBins];
 
   if(DEBUG) cout << "at get hists" << endl;
-  for (int i=0; i<2; i++){
+  for (int i=0; i<3; i++){
     for(int det=0; det<3; det++)
     {
       for(int n=0; n<nEtaBins; n++)
@@ -153,6 +156,7 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
   TLegend* leg = new TLegend(.65,.65,.87,.87);
   leg->AddEntry(errorEta[0][0][0],legName[0],"l");
   leg->AddEntry(errorEta[1][0][0],legName[1],"l");
+  leg->AddEntry(errorEta[2][0][0],legName[2],"l");
   TPaveText* lblE[nEtaBins]; 
   TPaveText* lblDet[3]; 
   if(DEBUG) cout << "at draw eta canvas" << endl;
@@ -182,8 +186,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cErrEta[det][activeCanvas]->cd(activeBin+1);
       errorEta[0][det][etabin]->SetLineColor(kBlack);
       errorEta[1][det][etabin]->SetLineColor(kRed);
-      Normalize(errorEta[0][det][etabin],errorEta[1][det][etabin]);
-      drawSort(cErrEta[det][activeCanvas],activeBin,errorEta[0][det][etabin],errorEta[1][det][etabin],0);
+      errorEta[2][det][etabin]->SetLineColor(kBlue);
+      Normalize(errorEta[0][det][etabin],errorEta[1][det][etabin],errorEta[2][det][etabin]);
+      drawSort(cErrEta[det][activeCanvas],activeBin,errorEta[0][det][etabin],errorEta[1][det][etabin],errorEta[2][det][etabin],0);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -191,8 +196,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cRErrEta[det][activeCanvas]->cd(activeBin+1);
       RerrorEta[0][det][etabin]->SetLineColor(kBlack);
       RerrorEta[1][det][etabin]->SetLineColor(kRed);
-      Normalize(RerrorEta[0][det][etabin],RerrorEta[1][det][etabin]);
-      drawSort(cRErrEta[det][activeCanvas],activeBin,RerrorEta[0][det][etabin],RerrorEta[1][det][etabin],1);
+      RerrorEta[2][det][etabin]->SetLineColor(kBlue);
+      Normalize(RerrorEta[0][det][etabin],RerrorEta[1][det][etabin],RerrorEta[2][det][etabin]);
+      drawSort(cRErrEta[det][activeCanvas],activeBin,RerrorEta[0][det][etabin],RerrorEta[1][det][etabin],RerrorEta[2][det][etabin],1);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -200,8 +206,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cResEta[det][activeCanvas]->cd(activeBin+1);
       resEta[0][det][etabin]->SetLineColor(kBlack);
       resEta[1][det][etabin]->SetLineColor(kRed);
-      Normalize(resEta[0][det][etabin],resEta[1][det][etabin]);
-      drawSort(cResEta[det][activeCanvas],activeBin,resEta[0][det][etabin],resEta[1][det][etabin],0);
+      resEta[2][det][etabin]->SetLineColor(kBlue);
+      Normalize(resEta[0][det][etabin],resEta[1][det][etabin],resEta[2][det][etabin]);
+      drawSort(cResEta[det][activeCanvas],activeBin,resEta[0][det][etabin],resEta[1][det][etabin],resEta[2][det][etabin],0);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -209,8 +216,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cRResEta[det][activeCanvas]->cd(activeBin+1);
       RresEta[0][det][etabin]->SetLineColor(kBlack);
       RresEta[1][det][etabin]->SetLineColor(kRed);
-      Normalize(RresEta[0][det][etabin],RresEta[1][det][etabin]);
-      drawSort(cRResEta[det][activeCanvas],activeBin,RresEta[0][det][etabin],RresEta[1][det][etabin],1);
+      RresEta[2][det][etabin]->SetLineColor(kBlue);
+      Normalize(RresEta[0][det][etabin],RresEta[1][det][etabin],RresEta[2][det][etabin]);
+      drawSort(cRResEta[det][activeCanvas],activeBin,RresEta[0][det][etabin],RresEta[1][det][etabin],RresEta[2][det][etabin],1);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -218,8 +226,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cPullEta[det][activeCanvas]->cd(activeBin+1);
       pullEta[0][det][etabin]->SetLineColor(kBlack);
       pullEta[1][det][etabin]->SetLineColor(kRed);
-      Normalize(pullEta[0][det][etabin],pullEta[1][det][etabin]);
-      drawSort(cPullEta[det][activeCanvas],activeBin,pullEta[0][det][etabin],pullEta[1][det][etabin],0);
+      pullEta[2][det][etabin]->SetLineColor(kBlue);
+      Normalize(pullEta[0][det][etabin],pullEta[1][det][etabin],pullEta[2][det][etabin]);
+      drawSort(cPullEta[det][activeCanvas],activeBin,pullEta[0][det][etabin],pullEta[1][det][etabin],pullEta[2][det][etabin],0);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -227,8 +236,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cRPullEta[det][activeCanvas]->cd(activeBin+1);
       RpullEta[0][det][etabin]->SetLineColor(kBlack);
       RpullEta[1][det][etabin]->SetLineColor(kRed);
-      Normalize(RpullEta[0][det][etabin],RpullEta[1][det][etabin]);
-      drawSort(cRPullEta[det][activeCanvas],activeBin,RpullEta[0][det][etabin],RpullEta[1][det][etabin],1);
+      RpullEta[2][det][etabin]->SetLineColor(kBlue);
+      Normalize(RpullEta[0][det][etabin],RpullEta[1][det][etabin],RpullEta[2][det][etabin]);
+      drawSort(cRPullEta[det][activeCanvas],activeBin,RpullEta[0][det][etabin],RpullEta[1][det][etabin],RpullEta[2][det][etabin],1);
       lblDet[det]->Draw("same");
       leg->Draw("same");
     }
@@ -253,8 +263,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cErrPt[det][activeCanvas]->cd(activeBin+1);
       errorPt[0][det][ptbin]->SetLineColor(kBlack);
       errorPt[1][det][ptbin]->SetLineColor(kRed);
-      Normalize(errorPt[0][det][ptbin],errorPt[1][det][ptbin]);
-      drawSort(cErrPt[det][activeCanvas],activeBin,errorPt[0][det][ptbin],errorPt[1][det][ptbin],0);
+      errorPt[2][det][ptbin]->SetLineColor(kBlue);
+      Normalize(errorPt[0][det][ptbin],errorPt[1][det][ptbin],errorPt[2][det][ptbin]);
+      drawSort(cErrPt[det][activeCanvas],activeBin,errorPt[0][det][ptbin],errorPt[1][det][ptbin],errorPt[2][det][ptbin],0);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -262,8 +273,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cRErrPt[det][activeCanvas]->cd(activeBin+1);
       RerrorPt[0][det][ptbin]->SetLineColor(kBlack);
       RerrorPt[1][det][ptbin]->SetLineColor(kRed);
-      Normalize(RerrorPt[0][det][ptbin],RerrorPt[1][det][ptbin]);
-      drawSort(cRErrPt[det][activeCanvas],activeBin,RerrorPt[0][det][ptbin],RerrorPt[1][det][ptbin],1);
+      RerrorPt[2][det][ptbin]->SetLineColor(kBlue);
+      Normalize(RerrorPt[0][det][ptbin],RerrorPt[1][det][ptbin],RerrorPt[2][det][ptbin]);
+      drawSort(cRErrPt[det][activeCanvas],activeBin,RerrorPt[0][det][ptbin],RerrorPt[1][det][ptbin],RerrorPt[2][det][ptbin],1);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -271,8 +283,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cResPt[det][activeCanvas]->cd(activeBin+1);
       resPt[0][det][ptbin]->SetLineColor(kBlack);
       resPt[1][det][ptbin]->SetLineColor(kRed);
-      Normalize(resPt[0][det][ptbin],resPt[1][det][ptbin]);
-      drawSort(cResPt[det][activeCanvas],activeBin,resPt[0][det][ptbin],resPt[1][det][ptbin],0);
+      resPt[2][det][ptbin]->SetLineColor(kBlue);
+      Normalize(resPt[0][det][ptbin],resPt[1][det][ptbin],resPt[2][det][ptbin]);
+      drawSort(cResPt[det][activeCanvas],activeBin,resPt[0][det][ptbin],resPt[1][det][ptbin],resPt[2][det][ptbin],0);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -280,8 +293,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cRResPt[det][activeCanvas]->cd(activeBin+1);
       RresPt[0][det][ptbin]->SetLineColor(kBlack);
       RresPt[1][det][ptbin]->SetLineColor(kRed);
-      Normalize(RresPt[0][det][ptbin],RresPt[1][det][ptbin]);
-      drawSort(cRResPt[det][activeCanvas],activeBin,RresPt[0][det][ptbin],RresPt[1][det][ptbin],1);
+      RresPt[2][det][ptbin]->SetLineColor(kBlue);
+      Normalize(RresPt[0][det][ptbin],RresPt[1][det][ptbin],RresPt[2][det][ptbin]);
+      drawSort(cRResPt[det][activeCanvas],activeBin,RresPt[0][det][ptbin],RresPt[1][det][ptbin],RresPt[2][det][ptbin],1);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -289,8 +303,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cPullPt[det][activeCanvas]->cd(activeBin+1);
       pullPt[0][det][ptbin]->SetLineColor(kBlack);
       pullPt[1][det][ptbin]->SetLineColor(kRed);
-      Normalize(pullPt[0][det][ptbin],pullPt[1][det][ptbin]);
-      drawSort(cPullPt[det][activeCanvas],activeBin,pullPt[0][det][ptbin],pullPt[1][det][ptbin],0);
+      pullPt[2][det][ptbin]->SetLineColor(kBlue);
+      Normalize(pullPt[0][det][ptbin],pullPt[1][det][ptbin],pullPt[2][det][ptbin]);
+      drawSort(cPullPt[det][activeCanvas],activeBin,pullPt[0][det][ptbin],pullPt[1][det][ptbin],pullPt[2][det][ptbin],0);
       lblDet[det]->Draw("same");
       leg->Draw("same");
 
@@ -298,8 +313,9 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       cRPullPt[det][activeCanvas]->cd(activeBin+1);
       RpullPt[0][det][ptbin]->SetLineColor(kBlack);
       RpullPt[1][det][ptbin]->SetLineColor(kRed);
-      Normalize(RpullPt[0][det][ptbin],RpullPt[1][det][ptbin]);
-      drawSort(cRPullPt[det][activeCanvas],activeBin,RpullPt[0][det][ptbin],RpullPt[1][det][ptbin],1);
+      RpullPt[2][det][ptbin]->SetLineColor(kBlue);
+      Normalize(RpullPt[0][det][ptbin],RpullPt[1][det][ptbin],RpullPt[2][det][ptbin]);
+      drawSort(cRPullPt[det][activeCanvas],activeBin,RpullPt[0][det][ptbin],RpullPt[1][det][ptbin],RpullPt[2][det][ptbin],1);
       lblDet[det]->Draw("same");
       leg->Draw("same");
     }
@@ -321,9 +337,11 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
   char FileName[100];
   char FileName2[100];
   char FileName3[100];
+  char FileName4[100];
   sprintf(FileName2,legName[0]);
   sprintf(FileName3,legName[1]);
-  sprintf(FileName,"%s_vs_%s",FileName2,FileName3); //convert string to char for later
+  sprintf(FileName4,legName[2]);
+  sprintf(FileName,"%s_vs_%s_vs_%s",FileName2,FileName3,FileName4); //convert string to char for later
 
   TString titlename = FileName;
   int found = titlename.Last('/');
@@ -377,8 +395,8 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
       temp->Print(name);
       // temp = cRPullEta[det][q];
       // temp->Print(name);
-    }
-*/
+    }*/
+
     for(int q=0; q<numPtCanvas; q++)
     {
       temp = cResPt[det][q];
@@ -405,7 +423,7 @@ int pl_GeomComparison(TString baseName = "junk.root", TString baseName2 = "junk2
   return 1;
 }
 
-void drawSort(TCanvas* can, int activeB, TH1F* a, TH1F* b, int AccOrRej)
+void drawSort(TCanvas* can, int activeB, TH1F* a, TH1F* b, TH1F* c, int AccOrRej)
 {
   TString Label;
   Label += a->GetTitle();
@@ -416,31 +434,44 @@ void drawSort(TCanvas* can, int activeB, TH1F* a, TH1F* b, int AccOrRej)
 
   int ai = a->GetMaximum();
   int bi = b->GetMaximum();
+  int ci = c->GetMaximum();
   int isLogY = 1;
   can->cd(activeB+1);
   gPad->SetLogy(isLogY);
-  if(a >= b)
+  if(a >= b && a >= c)
   {
     a->SetTitle(Label);
     a->Draw();
     b->Draw("same");
+    c->Draw("same");
   }
-  else if(b >= a)
+  else if(b >= a && b >= c)
   {
     b->SetTitle(Label);
     b->Draw();
     a->Draw("same");
+    c->Draw("same");
+  }
+  else if(c >= a && c >= b)
+  {
+    c->SetTitle(Label);
+    c->Draw();
+    a->Draw("same");
+    b->Draw("same");
   }
 }
 
-void Normalize(TH1F* hist0, TH1F* hist1)
+void Normalize(TH1F* hist0, TH1F* hist1, TH1F* hist2)
 {
-  double norm[2] = {0.};
+  double norm[3] = {0.};
   norm[0] = hist0->Integral();
   norm[1] = hist1->Integral();
+  norm[2] = hist2->Integral();
   hist0->Scale(1./norm[0]);
   hist1->Scale(1./norm[1]);
+  hist2->Scale(1./norm[2]);
   // Change Y-axis label to reflect
   hist0->GetYaxis()->SetTitle("1/N_{tot} * Counts");
   hist1->GetYaxis()->SetTitle("1/N_{tot} * Counts");
+  hist2->GetYaxis()->SetTitle("1/N_{tot} * Counts");
 }

@@ -365,7 +365,7 @@ void StiAnalyzer::BookHistograms()
   //Eta Bin Histograms
   for(int etabin = 0; etabin < numEtaBins; etabin++)
   {
-    errorEtaAcc[etabin] = new TH1F(Form("errorEtaAcc_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.2);
+    errorEtaAcc[etabin] = new TH1F(Form("errorEtaAcc_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.05);
     errorEtaRej[etabin] = new TH1F(Form("errorEtaRej_%i",etabin),Form("Error for %.2f < #eta < %.2f; Error (cm); Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,0.5);
     pullEtaAcc[etabin] = new TH1F(Form("pullEtaAcc_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull; Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,5);
     pullEtaRej[etabin] = new TH1F(Form("pullEtaRej_%i",etabin),Form("Pull for %.2f < #eta < %.2f; Pull; Counts",etaBinLow[etabin],etaBinHigh[etabin]),200,0,5);
@@ -374,13 +374,39 @@ void StiAnalyzer::BookHistograms()
   }
 
   // pT Bin Histograms
+  float errLowVal;
+  float errHighVal;
+  float resLowVal;
+  float resHighVal;
+  float pullLowVal;
+  float pullHighVal;
   for(int ptbin = 0; ptbin < numPtBins; ptbin++)
   {
-    errorPtAcc[ptbin] = new TH1F(Form("errorPtAcc_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.2);
-    errorPtRej[ptbin] = new TH1F(Form("errorPtRej_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.5);
-    pullPtAcc[ptbin] = new TH1F(Form("pullPtAcc_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull ; Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,5);
+    if(fileName.find("PXL1") != std::string::npos) 
+    {
+      errLowVal = (ptbin == 0 || ptbin == 1) ? 0.1 : 0.04;
+      resLowVal = 0.006;
+      pullLowVal = 2;
+    }
+    else if(fileName.find("PXL2") != std::string::npos) 
+    {
+      errLowVal = (ptbin == 0 || ptbin == 1) ? 0.8 : 0.5;
+      resLowVal = 0.006;
+      pullLowVal = 0.2;
+    }
+    else
+    {
+      errLowVal = (ptbin == 0 || ptbin == 1) ? 0.8 : 0.5;
+      resLowVal = 0.5;
+      pullLowVal = 6;
+    }
+
+    errHighVal = (ptbin == 0 || ptbin == 1) ? 1.0 : 0.6; 
+    errorPtAcc[ptbin] = new TH1F(Form("errorPtAcc_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,errLowVal);
+    errorPtRej[ptbin] = new TH1F(Form("errorPtRej_%i",ptbin),Form("Error for %.2f < pT < %.2f; Error (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,errHighVal);
+    pullPtAcc[ptbin] = new TH1F(Form("pullPtAcc_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull ; Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,pullLowVal);
     pullPtRej[ptbin] = new TH1F(Form("pullPtRej_%i",ptbin),Form("Pull for %.2f < pT < %.2f; Pull ; Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,5);
-    resPtAcc[ptbin] = new TH1F(Form("resPtAcc_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm)); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.5);
+    resPtAcc[ptbin] = new TH1F(Form("resPtAcc_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm)); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,resLowVal);
     resPtRej[ptbin] = new TH1F(Form("resPtRej_%i",ptbin),Form("Residual for %.2f < pT < %.2f; Dist to Close Hit (cm); Counts",ptBinLow[ptbin],ptBinHigh[ptbin]),200,0,0.5);
   }
 
